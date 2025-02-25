@@ -1,0 +1,14 @@
+---
+- name: Disclaimer for AMD image
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - "'amd' in options"
+
+  block:
+    - name: Disclaimer for AMD image
+      ansible.builtin.copy:
+        src: README.txt
+        dest: "/home/ubuntu/README.txt"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
