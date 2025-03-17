@@ -1,0 +1,82 @@
+version: 0.1
+component: build
+timeoutInSeconds: 10000
+shell: bash
+failImmediatelyOnError: true
+env:
+  vaultVariables:
+    SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
+
+steps:
+  - type: Command
+    name: "Install Dependencies"
+    shell: bash
+    timeoutInSeconds: 600
+    failImmediatelyOnError: true
+    command: |
+      # Install utilities, including gnupg for GPG operations
+      yum install -y yum-utils tmux gnupg
+      # Add HashiCorp repository and install packer
+      yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+      yum install -y packer
+      # Install Oracle EPEL release for Oracle Linux 7
+      yum install -y oracle-epel-release-el7
+      yum-config-manager --enable ol7_codeready_builder || echo "ol7_codeready_builder not available"
+      
+      # Install SOPS by downloading the pre-built binary
+      curl -Lo /usr/local/bin/sops https://github.com/mozilla/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64
+      chmod +x /usr/local/bin/sops
+
+  - type: Command
+    name: "Setup Python Environment"
+    shell: bash
+    timeoutInSeconds: 600
+    failImmediatelyOnError: true
+    command: |
+      yum install -y python38
+      python3.8 -m pip install --upgrade pip setuptools
+      python3.8 -m venv packer_env
+      source packer_env/bin/activate
+      python -m pip install --upgrade pip
+      pip install ansible-core==2.13.13
+
+  - type: Command
+    name: "Install Ansible Galaxy Roles"
+    shell: bash
+    timeoutInSeconds: 300
+    failImmediatelyOnError: true
+    command: |
+      ansible-galaxy install -r ./requirements.yml
+
+  - type: Command
+    name: "Decrypt Defaults File"
+    shell: bash
+    timeoutInSeconds: 300
+    failImmediatelyOnError: true
+    command: |
+      # Import the SOPS PGP private key retrieved from OCI Vault
+      echo "$SOPS_PGP_KEY" | gpg --import
+      # Decrypt the encrypted defaults file to produce defaults.packer.hcl
+      sops --decrypt defaults.packer.hcl.enc > defaults.packer.hcl
+
+  - type: Command
+    name: "Build Custom Image"
+    shell: bash
+    timeoutInSeconds: 3600
+    failImmediatelyOnError: true
+    command: |
+      # Extract build_config_path from the decrypted defaults file
+      build_config_path=$(grep '^build_config_path' defaults.packer.hcl | cut -d '=' -f2 | tr -d ' "')
+      echo "Using build_config_path: ${build_config_path}"
+      # Run packer init and build using the extracted build_config_path
+      tmux new -d -s packer_session "packer init ${build_config_path} && packer build -var-file='defaults.packer.hcl' ${build_config_path}"
+      tmux attach-session -t packer_session
+
+  - type: Command
+    name: "Cleanup Decrypted File"
+    shell: bash
+    timeoutInSeconds: 60
+    failImmediatelyOnError: false
+    command: |
+      # Remove the decrypted configuration file to secure sensitive data
+      rm -f defaults.packer.hcl

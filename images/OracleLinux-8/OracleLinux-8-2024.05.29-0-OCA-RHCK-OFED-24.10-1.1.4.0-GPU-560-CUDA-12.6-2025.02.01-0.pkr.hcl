@@ -20,7 +20,7 @@ variable "image_base_name" {
 
 variable "image_id" {
   type    = string
-  default = "ocid1.image.oc1.iad.aaaaaaaaxtzkhdlxbktlkhiausqz7qvqg7d5jqbrgy6empmrojtdktwfv7fq"
+  default = "ocid1.image.oc1.iad.aaaaaaaapu34hvrujrklcjgki5zhfkiztf2li7hrvacwgpob6m2ct7aslvoq"
 }
 
 variable "ssh_username" {
@@ -96,7 +96,9 @@ build {
 
   provisioner "ansible" {
     playbook_file   = "${path.root}/../../ansible/hpc.yml"
-    extra_arguments = [ "-e", local.ansible_args] 
+    extra_arguments = [ 
+      "-e", local.ansible_args, "-vvvv"
+    ] 
     groups = local.ansible_groups
     user = var.ssh_username
   }
