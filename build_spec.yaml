@@ -5,7 +5,7 @@ shell: bash
 failImmediatelyOnError: true
 env:
   vaultVariables:
-    # Ensure that this vault secret contains a single-line base64-encoded key.
+    # Ensure this vault secret is a single-line base64-encoded private key.
     SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
 steps:
   - type: Command
@@ -37,17 +37,17 @@ steps:
     timeoutInSeconds: 600
     failImmediatelyOnError: true
     command: |
-      # Install Python 3.6 (available on Oracle Linux 7)
+      # Install Python 3.6, available on Oracle Linux 7
       yum install -y python36
       # Upgrade pip and setuptools using Python 3.6
       python3.6 -m pip install --upgrade pip setuptools
       # Create a virtual environment using Python 3.6
       python3.6 -m venv packer_env
       source packer_env/bin/activate
-      # Upgrade pip again within the virtual environment
+      # Upgrade pip within the virtual environment
       python -m pip install --upgrade pip
-      # Install ansible-core (specific version required)
-      pip install ansible-core==2.13.13
+      # Install ansible-core version 2.11.12 (an available version)
+      pip install ansible-core==2.11.12
 
   - type: Command
     name: "Install Ansible Galaxy Roles"
