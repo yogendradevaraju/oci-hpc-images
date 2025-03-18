@@ -74,10 +74,10 @@ steps:
     failImmediatelyOnError: true
     command: |
       # Extract build_config_path from the decrypted defaults file
-      build_config_path=$(grep '^build_config_path' defaults.packer.hcl | cut -d '=' -f2 | tr -d ' "')
+      build_config_path=$(grep '^build_config_path' defaults.pkr.hcl | cut -d '=' -f2 | tr -d ' "')
       echo "Using build_config_path: ${build_config_path}"
       # Run packer init and build using the extracted build_config_path directly
-      packer init ${build_config_path} && packer build -var-file='defaults.packer.hcl' ${build_config_path}
+      packer init ${build_config_path} && packer build -var-file='defaults.pkr.hcl' ${build_config_path}
 
   - type: Command
     name: "Cleanup Decrypted File"
