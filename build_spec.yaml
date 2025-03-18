@@ -7,7 +7,6 @@ env:
   vaultVariables:
     # Ensure that this vault secret contains a single-line base64-encoded key.
     SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
-
 steps:
   - type: Command
     name: "Install Dependencies"
@@ -26,8 +25,6 @@ steps:
       curl -Lo packer.zip https://releases.hashicorp.com/packer/1.7.10/packer_1.7.10_linux_amd64.zip
       unzip packer.zip -d /usr/local/bin/
       chmod +x /usr/local/bin/packer
-      
-      # Clean up the downloaded zip file
       rm -f packer.zip
 
       # Install SOPS by downloading the pre-built binary
@@ -40,11 +37,16 @@ steps:
     timeoutInSeconds: 600
     failImmediatelyOnError: true
     command: |
-      yum install -y python38
-      python3.8 -m pip install --upgrade pip setuptools
-      python3.8 -m venv packer_env
+      # Install Python 3.6 (available on Oracle Linux 7)
+      yum install -y python36
+      # Upgrade pip and setuptools using Python 3.6
+      python3.6 -m pip install --upgrade pip setuptools
+      # Create a virtual environment using Python 3.6
+      python3.6 -m venv packer_env
       source packer_env/bin/activate
+      # Upgrade pip again within the virtual environment
       python -m pip install --upgrade pip
+      # Install ansible-core (specific version required)
       pip install ansible-core==2.13.13
 
   - type: Command
