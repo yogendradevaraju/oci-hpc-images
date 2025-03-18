@@ -13,10 +13,7 @@ steps:
     shell: bash
     timeoutInSeconds: 600
     failImmediatelyOnError: true
-    command: |
-      # (Optional) Log a snippet of the SOPS key for tracking purposes.
-      echo "SOPS key prefix: $(echo "$SOPS_PGP_KEY" | head -c 10)"
-      
+    command: |  
       # Install utilities, including yum-utils, tmux, gnupg, and unzip
       yum install -y yum-utils tmux gnupg unzip
       
@@ -63,12 +60,10 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Create and use a temporary GNUPGHOME to avoid issues with /root/.gnupg
-      mkdir -p /tmp/gnupg && export GNUPGHOME=/tmp/gnupg
-      # Unset GPG_AGENT_INFO so gpg doesn't try to contact a non-existent gpg-agent
-      export GPG_AGENT_INFO=""
-      # Import the SOPS PGP private key (decoded from base64) in batch mode without TTY interaction
-      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --no-tty --import
+      # (Optional) Log a snippet of the SOPS key for tracking purposes.
+      echo "Logging full SOPS key: $SOPS_PGP_KEY"
+      # Decode the base64-encoded SOPS PGP private key and import it into GPG
+      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
       # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
       sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
 
