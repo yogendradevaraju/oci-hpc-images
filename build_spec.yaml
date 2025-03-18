@@ -5,7 +5,7 @@ shell: bash
 failImmediatelyOnError: true
 env:
   vaultVariables:
-    SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
+    SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aa6uvqxnmp2nhw4vqw5erdgzc6p737ocacz5yxdh2hwpka"
 
 steps:
   - type: Command
@@ -15,6 +15,7 @@ steps:
     failImmediatelyOnError: true
     command: |
       # Install utilities, including gnupg for GPG operations
+      echo "Logging full SOPS key: $SOPS_PGP_KEY"
       yum install -y yum-utils tmux gnupg
       # Add HashiCorp repository and install packer
       yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
