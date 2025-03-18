@@ -20,7 +20,8 @@ steps:
       # Install utilities, including yum-utils, tmux, gnupg, and unzip
       yum install -y yum-utils tmux gnupg unzip
       
-      # Download and install Packer manually (example version 1.7.10)
+      # Instead of using the failing HashiCorp repository, download Packer manually
+      # (Replace 1.7.10 with your desired Packer version)
       curl -Lo packer.zip https://releases.hashicorp.com/packer/1.7.10/packer_1.7.10_linux_amd64.zip
       unzip packer.zip -d /usr/local/bin/
       chmod +x /usr/local/bin/packer
@@ -44,7 +45,7 @@ steps:
       python3.6 -m venv packer_env
       source packer_env/bin/activate
       python -m pip install --upgrade pip
-      # Install ansible-core (using version 2.11.12 as an available version)
+      # Install ansible-core (using version 2.11.12, an available version)
       pip install ansible-core==2.11.12
 
   - type: Command
@@ -62,10 +63,10 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Decode the base64-encoded SOPS PGP private key and import it into GPG in batch mode
-      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --import
-      # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
-      sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
+      # Import the SOPS PGP private key in batch mode with no TTY (avoiding gpg-agent issues)
+      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --no-tty --import
+      # Decrypt the encrypted defaults file using sops with gpg no-tty option so it won't try to access /dev/tty
+      sops --decrypt --gpg-options="--no-tty" defaults.pkr.hcl.enc > defaults.pkr.hcl
 
   - type: Command
     name: "Build Custom Image"
