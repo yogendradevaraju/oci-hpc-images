@@ -55,8 +55,8 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Import the SOPS PGP private key retrieved from OCI Vault
-      echo "$SOPS_PGP_KEY" | gpg --import
+      # Decode the base64-encoded SOPS PGP private key and import it into GPG
+      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
       # Decrypt the encrypted defaults file to produce defaults.packer.hcl
       sops --decrypt defaults.packer.hcl.enc > defaults.packer.hcl
 
