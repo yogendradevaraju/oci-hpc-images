@@ -5,6 +5,7 @@ shell: bash
 failImmediatelyOnError: true
 env:
   vaultVariables:
+    # Ensure that this vault secret contains a single-line base64-encoded key.
     SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
 
 steps:
@@ -14,16 +15,21 @@ steps:
     timeoutInSeconds: 600
     failImmediatelyOnError: true
     command: |
-      # Install utilities, including gnupg for GPG operations
-      echo "Logging full SOPS key: $SOPS_PGP_KEY"
-      yum install -y yum-utils tmux gnupg
-      # Add HashiCorp repository and install packer
-      yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-      yum install -y packer
-      # Install Oracle EPEL release for Oracle Linux 7
-      yum install -y oracle-epel-release-el7
-      yum-config-manager --enable ol7_codeready_builder || echo "ol7_codeready_builder not available"
+      # (Optional) Log a snippet of the SOPS key for tracking purposes.
+      echo "SOPS key prefix: $(echo "$SOPS_PGP_KEY" | head -c 10)"
       
+      # Install utilities, including yum-utils, tmux, gnupg, and unzip
+      yum install -y yum-utils tmux gnupg unzip
+      
+      # Instead of using the failing HashiCorp repository, download Packer manually
+      # (Replace 1.7.10 with your desired Packer version)
+      curl -Lo packer.zip https://releases.hashicorp.com/packer/1.7.10/packer_1.7.10_linux_amd64.zip
+      unzip packer.zip -d /usr/local/bin/
+      chmod +x /usr/local/bin/packer
+      
+      # Clean up the downloaded zip file
+      rm -f packer.zip
+
       # Install SOPS by downloading the pre-built binary
       curl -Lo /usr/local/bin/sops https://github.com/mozilla/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64
       chmod +x /usr/local/bin/sops
@@ -55,7 +61,7 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Decode the base64-encoded SOPS PGP private key and import it into GPG
+      # Decode the base64-encoded SOPS PGP private key (from OCI Vault) and import it into GPG
       echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
       # Decrypt the encrypted defaults file to produce defaults.packer.hcl
       sops --decrypt defaults.packer.hcl.enc > defaults.packer.hcl
