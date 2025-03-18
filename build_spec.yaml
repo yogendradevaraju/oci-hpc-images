@@ -66,8 +66,8 @@ steps:
     command: |
       # Decode the base64-encoded SOPS PGP private key (from OCI Vault) and import it into GPG
       echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
-      # Decrypt the encrypted defaults file to produce defaults.packer.hcl
-      sops --decrypt defaults.packer.hcl.enc > defaults.packer.hcl
+      # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
+      sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
 
   - type: Command
     name: "Build Custom Image"
@@ -76,10 +76,10 @@ steps:
     failImmediatelyOnError: true
     command: |
       # Extract build_config_path from the decrypted defaults file
-      build_config_path=$(grep '^build_config_path' defaults.packer.hcl | cut -d '=' -f2 | tr -d ' "')
+      build_config_path=$(grep '^build_config_path' defaults.pkr.hcl | cut -d '=' -f2 | tr -d ' "')
       echo "Using build_config_path: ${build_config_path}"
       # Run packer init and build using the extracted build_config_path
-      tmux new -d -s packer_session "packer init ${build_config_path} && packer build -var-file='defaults.packer.hcl' ${build_config_path}"
+      tmux new -d -s packer_session "packer init ${build_config_path} && packer build -var-file='defaults.pkr.hcl' ${build_config_path}"
       tmux attach-session -t packer_session
 
   - type: Command
@@ -89,4 +89,4 @@ steps:
     failImmediatelyOnError: false
     command: |
       # Remove the decrypted configuration file to secure sensitive data
-      rm -f defaults.packer.hcl
+      rm -f defaults.pkr.hcl
