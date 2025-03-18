@@ -5,7 +5,7 @@ shell: bash
 failImmediatelyOnError: true
 env:
   vaultVariables:
-    # Ensure this vault secret is a single-line base64-encoded private key.
+    # Ensure that this vault secret contains a single-line base64-encoded private key.
     SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
 steps:
   - type: Command
@@ -55,7 +55,8 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      ansible-galaxy install -r ./requirements.yml
+      # Activate the virtual environment to make ansible-galaxy available
+      source packer_env/bin/activate && ansible-galaxy install -r ./requirements.yml
 
   - type: Command
     name: "Decrypt Defaults File"
