@@ -20,14 +20,13 @@ steps:
       # Install utilities, including yum-utils, tmux, gnupg, and unzip
       yum install -y yum-utils tmux gnupg unzip
       
-      # Instead of using the failing HashiCorp repository, download Packer manually
-      # (Replace 1.7.10 with your desired Packer version)
+      # Download and install Packer manually (example version 1.7.10)
       curl -Lo packer.zip https://releases.hashicorp.com/packer/1.7.10/packer_1.7.10_linux_amd64.zip
       unzip packer.zip -d /usr/local/bin/
       chmod +x /usr/local/bin/packer
       rm -f packer.zip
 
-      # Install SOPS by downloading the pre-built binary
+      # Download and install SOPS
       curl -Lo /usr/local/bin/sops https://github.com/mozilla/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64
       chmod +x /usr/local/bin/sops
 
@@ -37,16 +36,15 @@ steps:
     timeoutInSeconds: 600
     failImmediatelyOnError: true
     command: |
-      # Install Python 3.6, available on Oracle Linux 7
+      # Install Python 3.6 (available on Oracle Linux 7)
       yum install -y python36
       # Upgrade pip and setuptools using Python 3.6
       python3.6 -m pip install --upgrade pip setuptools
-      # Create a virtual environment using Python 3.6
+      # Create and activate a virtual environment
       python3.6 -m venv packer_env
       source packer_env/bin/activate
-      # Upgrade pip within the virtual environment
       python -m pip install --upgrade pip
-      # Install ansible-core version 2.11.12 (an available version)
+      # Install ansible-core (using version 2.11.12 as an available version)
       pip install ansible-core==2.11.12
 
   - type: Command
@@ -55,7 +53,7 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Activate the virtual environment to make ansible-galaxy available
+      # Activate the virtual environment so that ansible-galaxy is available
       source packer_env/bin/activate && ansible-galaxy install -r ./requirements.yml
 
   - type: Command
@@ -64,10 +62,10 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Import the SOPS PGP private key in batch mode and disable pinentry prompt
-      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --pinentry-mode loopback --import
-      # Decrypt the encrypted defaults file using loopback mode for GPG so it doesn't prompt for input
-      sops --decrypt --gpg-options="--pinentry-mode=loopback" defaults.pkr.hcl.enc > defaults.pkr.hcl
+      # Decode the base64-encoded SOPS PGP private key and import it into GPG in batch mode
+      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --import
+      # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
+      sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
 
   - type: Command
     name: "Build Custom Image"
@@ -78,7 +76,7 @@ steps:
       # Extract build_config_path from the decrypted defaults file
       build_config_path=$(grep '^build_config_path' defaults.pkr.hcl | cut -d '=' -f2 | tr -d ' "')
       echo "Using build_config_path: ${build_config_path}"
-      # Run packer init and build using the extracted build_config_path
+      # Run packer init and build using the extracted build_config_path in a tmux session
       tmux new -d -s packer_session "packer init ${build_config_path} && packer build -var-file='defaults.pkr.hcl' ${build_config_path}"
       tmux attach-session -t packer_session
 
