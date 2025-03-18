@@ -64,10 +64,10 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Decode the base64-encoded SOPS PGP private key (from OCI Vault) and import it into GPG
-      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
-      # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
-      sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
+      # Import the SOPS PGP private key in batch mode and disable pinentry prompt
+      echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --pinentry-mode loopback --import
+      # Decrypt the encrypted defaults file using loopback mode for GPG so it doesn't prompt for input
+      sops --decrypt --gpg-options="--pinentry-mode=loopback" defaults.pkr.hcl.enc > defaults.pkr.hcl
 
   - type: Command
     name: "Build Custom Image"
