@@ -63,10 +63,10 @@ steps:
     timeoutInSeconds: 300
     failImmediatelyOnError: true
     command: |
-      # Import the SOPS PGP private key in batch mode with no TTY (avoiding gpg-agent issues)
+      # Import the SOPS PGP private key (decoded from base64) in batch mode without TTY interaction.
       echo "$SOPS_PGP_KEY" | base64 --decode | gpg --batch --no-tty --import
-      # Decrypt the encrypted defaults file using sops with gpg no-tty option so it won't try to access /dev/tty
-      sops --decrypt --gpg-options="--no-tty" defaults.pkr.hcl.enc > defaults.pkr.hcl
+      # Decrypt the encrypted defaults file. The decrypted output is stored in defaults.pkr.hcl.
+      sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
 
   - type: Command
     name: "Build Custom Image"
