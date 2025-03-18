@@ -5,7 +5,7 @@ shell: bash
 failImmediatelyOnError: true
 env:
   vaultVariables:
-    SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aa6uvqxnmp2nhw4vqw5erdgzc6p737ocacz5yxdh2hwpka"
+    SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
 
 steps:
   - type: Command
