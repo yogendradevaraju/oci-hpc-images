@@ -64,7 +64,7 @@ steps:
       # Always create the .oci directory
       mkdir -p ~/.oci
       # Write the OCI_API_KEY directly into the key file
-      echo "$OCI_API_KEY" > ~/.oci/oci_api_key.pem
+      echo "$OCI_API_KEY" | base64 --decode > ~/.oci/oci_api_key.pem
       chmod go-rwx ~/.oci/oci_api_key.pem
       
       # Create (or overwrite) the OCI config file with your credentials.
