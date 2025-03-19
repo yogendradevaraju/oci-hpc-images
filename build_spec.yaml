@@ -55,6 +55,23 @@ steps:
       source packer_env/bin/activate && ansible-galaxy install -r ./requirements.yml
 
   - type: Command
+    name: "Configure OCI CLI and API Keys"
+    shell: bash
+    timeoutInSeconds: 300
+    failImmediatelyOnError: true
+    command: |
+      # Create the .oci directory if it doesn't exist
+      mkdir -p ~/.oci
+      # Generate a new private key for OCI API access
+      openssl genrsa -out ~/.oci/oci_api_key.pem 2048
+      # Secure the private key file
+      chmod go-rwx ~/.oci/oci_api_key.pem
+      # Generate the corresponding public key
+      openssl rsa -pubout -in ~/.oci/oci_api_key.pem -out ~/.oci/oci_api_key_public.pem
+      echo "Public Key (please add this to your OCI profile under User Settings > API Keys):"
+      cat ~/.oci/oci_api_key_public.pem
+
+  - type: Command
     name: "Decrypt Defaults File"
     shell: bash
     timeoutInSeconds: 300
