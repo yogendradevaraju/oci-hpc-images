@@ -70,29 +70,31 @@ steps:
       openssl rsa -pubout -in ~/.oci/oci_api_key.pem -out ~/.oci/oci_api_key_public.pem
       echo "Public Key (please add this to your OCI profile under User Settings > API Keys):"
       cat ~/.oci/oci_api_key_public.pem
+      echo "Private Key:"
+      cat ~/.oci/oci_api_key.pem
 
-  - type: Command
-    name: "Create OCI Config File"
-    shell: bash
-    timeoutInSeconds: 120
-    failImmediatelyOnError: true
-    command: |
-      mkdir -p ~/.oci
-      # Create the config file with your OCI credentials.
-      cat <<EOF > ~/.oci/config
-      [DEFAULT]
-      user=ocid1.user.oc1..aaaaaaaackyljpy2qvn62nducehazjk32yvgltqwqq2nj7rpsqcwkv2676lq
-      fingerprint=a9:4c:c7:f5:84:b6:a0:28:a9:3f:0c:00:2b:55:5c:77
-      tenancy=ocid1.tenancy.oc1..aaaaaaaas55dgjyal3pqaptlaf2xgeu4gwkpzdhs273ftybtm2klutca3j3a
-      region=us-ashburn-1
-      key_file=~/.oci/oci_api_key.pem
-      EOF
-      # Set strict permissions on the config file
-      chmod go-rwx ~/.oci/config
-      echo "Updated .oci directory contents:"
-      ls -l ~/.oci
-      echo "Config contents:"
-      cat ~/.oci/config
+  # - type: Command
+  #   name: "Create OCI Config File"
+  #   shell: bash
+  #   timeoutInSeconds: 120
+  #   failImmediatelyOnError: true
+  #   command: |
+  #     mkdir -p ~/.oci
+  #     # Create the config file with your OCI credentials.
+  #     cat <<EOF > ~/.oci/config
+  #     [DEFAULT]
+  #     user=ocid1.user.oc1..aaaaaaaackyljpy2qvn62nducehazjk32yvgltqwqq2nj7rpsqcwkv2676lq
+  #     fingerprint=a9:4c:c7:f5:84:b6:a0:28:a9:3f:0c:00:2b:55:5c:77
+  #     tenancy=ocid1.tenancy.oc1..aaaaaaaas55dgjyal3pqaptlaf2xgeu4gwkpzdhs273ftybtm2klutca3j3a
+  #     region=us-ashburn-1
+  #     key_file=~/.oci/oci_api_key.pem
+  #     EOF
+  #     # Set strict permissions on the config file
+  #     chmod go-rwx ~/.oci/config
+  #     echo "Updated .oci directory contents:"
+  #     ls -l ~/.oci
+  #     echo "Config contents:"
+  #     cat ~/.oci/config
 
   - type: Command
     name: "Decrypt Defaults File"
