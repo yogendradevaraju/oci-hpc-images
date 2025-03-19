@@ -116,8 +116,12 @@ steps:
       # Extract build_config_path from the decrypted defaults file
       build_config_path=$(grep '^build_config_path' defaults.pkr.hcl | cut -d '=' -f2 | tr -d ' "')
       echo "Using build_config_path: ${build_config_path}"
-      # Run packer init and build using the extracted build_config_path directly
-      packer init ${build_config_path} && packer build -var-file='defaults.pkr.hcl' ${build_config_path}
+      # Activate the virtual environment so ansible-playbook is in PATH
+      source packer_env/bin/activate
+      export PATH="$PWD/packer_env/bin:$PATH"
+      # Run packer init and build, passing build_config_path as a variable.
+      packer init "${build_config_path}" && \
+      packer build -var "build_config_path=${build_config_path}" -var-file='defaults.pkr.hcl' "${build_config_path}"
 
   - type: Command
     name: "Cleanup Decrypted File"
