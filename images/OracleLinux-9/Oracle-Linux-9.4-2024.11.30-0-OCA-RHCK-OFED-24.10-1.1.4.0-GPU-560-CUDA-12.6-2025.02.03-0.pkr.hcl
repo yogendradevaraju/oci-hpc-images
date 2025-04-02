@@ -20,7 +20,7 @@ variable "image_base_name" {
 
 variable "image_id" {
   type    = string
-  default = "ocid1.image.oc1.iad.aaaaaaaae2zqy6e3unvd6rntsuxd6pdnxtc5giebdk23ogjmk3vafzcv4ioq"
+  default = "ocid1.image.oc1.iad.aaaaaaaazehberudhnutscsu5vybeup2ascsaxw7qmpipb63bczmjyh4qcka"
 }
 
 variable "ssh_username" {
