@@ -4,7 +4,7 @@ packer {
     required_plugins {
       oracle = {
         source = "github.com/hashicorp/oracle"
-        version = ">= 1.0.3"
+        version = "=2.2.2"
       }
     ansible = {
       version = "~> 1"
@@ -45,6 +45,7 @@ variable "compartment_ocid" { type = string }
 variable "shape" { type = string }
 variable "subnet_ocid" { type = string }
 variable "use_instance_principals" { type = bool }
+variable "use_resource_principals" { type = bool }
 variable "access_cfg_file_account" { 
   type = string 
   default = "DEFAULT" 
@@ -65,12 +66,13 @@ source "oracle-oci" "oracle" {
   shape_config        { ocpus = "16" }
   ssh_username        = var.ssh_username
   subnet_ocid         = var.subnet_ocid
-  access_cfg_file     = var.use_instance_principals ? null : var.access_cfg_file
-  access_cfg_file_account = var.use_instance_principals ? null : var.access_cfg_file_account
-  region              = var.use_instance_principals ? null : var.region
+  access_cfg_file     = var.use_resource_principals ? null : var.access_cfg_file
+  access_cfg_file_account = var.use_resource_principals ? null : var.access_cfg_file_account
+  region              = var.use_resource_principals ? null : var.region
   user_data_file      = "${path.root}/../files/user_data.txt"
   disk_size           = 60
   use_instance_principals = var.use_instance_principals
+  use_resource_principals = var.use_resource_principals
   ssh_timeout         = "90m"
   instance_name       = "HPC-ImageBuilder-${local.build_name}"
 }

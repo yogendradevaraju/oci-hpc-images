@@ -7,7 +7,7 @@ env:
   vaultVariables:
     # Ensure that this vault secret contains a single-line base64-encoded private key.
     SOPS_PGP_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aalfuxr577tgsphedqodulqamf7lkrmtf7scclr6g2xa7a"
-    OCI_API_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aanjmtqyih64tk7u3icwqjdqhf7i54v46vfu6oupnw6exq"
+    # OCI_API_KEY: "ocid1.vaultsecret.oc1.iad.amaaaaaarhu4k2aanjmtqyih64tk7u3icwqjdqhf7i54v46vfu6oupnw6exq"
 steps:
   - type: Command
     name: "Install Dependencies"
@@ -72,35 +72,35 @@ steps:
   #     echo "Public Key (please add this to your OCI profile under User Settings > API Keys):"
   #     cat ~/.oci/oci_api_key_public.pem
 
-  - type: Command
-    name: "Create OCI API Key & Config File"
-    shell: bash
-    timeoutInSeconds: 120
-    failImmediatelyOnError: true
-    command: |
-      # Always create the .oci directory
-      mkdir -p ~/.oci
-      # Write the OCI_API_KEY directly into the key file
-      echo "$OCI_API_KEY" | base64 --decode > ~/.oci/oci_api_key.pem
-      chmod go-rwx ~/.oci/oci_api_key.pem
+  # - type: Command
+  #   name: "Create OCI API Key & Config File"
+  #   shell: bash
+  #   timeoutInSeconds: 120
+  #   failImmediatelyOnError: true
+  #   command: |
+  #     # Always create the .oci directory
+  #     mkdir -p ~/.oci
+  #     # Write the OCI_API_KEY directly into the key file
+  #     echo "$OCI_API_KEY" | base64 --decode > ~/.oci/oci_api_key.pem
+  #     chmod go-rwx ~/.oci/oci_api_key.pem
       
-      # Create (or overwrite) the OCI config file with your credentials.
-      cat <<EOF > ~/.oci/config
-      [DEFAULT]
-      user=ocid1.user.oc1..aaaaaaaackyljpy2qvn62nducehazjk32yvgltqwqq2nj7rpsqcwkv2676lq
-      fingerprint=6c:a1:86:9c:73:5b:79:69:53:e9:d5:7a:f4:9c:41:32
-      tenancy=ocid1.tenancy.oc1..aaaaaaaas55dgjyal3pqaptlaf2xgeu4gwkpzdhs273ftybtm2klutca3j3a
-      region=us-ashburn-1
-      key_file=~/.oci/oci_api_key.pem
-      EOF
+  #     # Create (or overwrite) the OCI config file with your credentials.
+  #     cat <<EOF > ~/.oci/config
+  #     [DEFAULT]
+  #     user=ocid1.user.oc1..aaaaaaaackyljpy2qvn62nducehazjk32yvgltqwqq2nj7rpsqcwkv2676lq
+  #     fingerprint=6c:a1:86:9c:73:5b:79:69:53:e9:d5:7a:f4:9c:41:32
+  #     tenancy=ocid1.tenancy.oc1..aaaaaaaas55dgjyal3pqaptlaf2xgeu4gwkpzdhs273ftybtm2klutca3j3a
+  #     region=us-ashburn-1
+  #     key_file=~/.oci/oci_api_key.pem
+  #     EOF
 
-      chmod go-rwx ~/.oci/config
+  #     chmod go-rwx ~/.oci/config
 
-      echo "Updated .oci directory contents:"
-      ls -l ~/.oci
-      cat ~/.oci/oci_api_key.pem
-      echo "Config contents:"
-      cat ~/.oci/config
+  #     echo "Updated .oci directory contents:"
+  #     ls -l ~/.oci
+  #     cat ~/.oci/oci_api_key.pem
+  #     echo "Config contents:"
+  #     cat ~/.oci/config
 
   - type: Command
     name: "Decrypt Defaults File"
@@ -114,6 +114,16 @@ steps:
       echo "$SOPS_PGP_KEY" | base64 --decode | gpg --import
       # Decrypt the encrypted defaults file to produce defaults.pkr.hcl
       sops --decrypt defaults.pkr.hcl.enc > defaults.pkr.hcl
+
+  - type: Command
+    name: "Install Custom OCI Plugin"
+    shell: bash
+    timeoutInSeconds: 600
+    failImmediatelyOnError: true
+    command: |
+      # This step installs the custom OCI plugin binary that has been pushed to the repository.
+      # Adjust the path if your binary is stored elsewhere.
+      packer plugins install --path ./packer-plugin-oracle github.com/hashicorp/oracle
 
   - type: Command
     name: "Build Custom Image"
