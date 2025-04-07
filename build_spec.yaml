@@ -121,8 +121,9 @@ steps:
     timeoutInSeconds: 600
     failImmediatelyOnError: true
     command: |
+      # Activate the virtual environment so that any required executables (e.g., ansible-playbook) are in PATH
+      source packer_env/bin/activate
       # This step installs the custom OCI plugin binary that has been pushed to the repository.
-      # Adjust the path if your binary is stored elsewhere.
       packer plugins install --path ./packer-plugin-oracle github.com/hashicorp/oracle
 
   - type: Command
