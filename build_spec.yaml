@@ -18,9 +18,8 @@ steps:
       # Install utilities, including yum-utils, gnupg, and unzip
       yum install -y yum-utils gnupg unzip
       
-      # Instead of using the failing HashiCorp repository, download Packer manually
-      # (Replace 1.7.10 with your desired Packer version)
-      curl -Lo packer.zip https://releases.hashicorp.com/packer/1.7.10/packer_1.7.10_linux_amd64.zip
+      # Download Packer version 1.12.0 (which supports plugins)
+      curl -Lo packer.zip https://releases.hashicorp.com/packer/1.12.0/packer_1.12.0_linux_amd64.zip
       unzip packer.zip -d /usr/local/bin/
       chmod +x /usr/local/bin/packer
       rm -f packer.zip
