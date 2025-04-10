@@ -136,8 +136,16 @@ steps:
       echo "Using build_config_path: ${build_config_path}"
       # Activate the virtual environment so that any required executables (e.g., ansible-playbook) are in PATH
       source packer_env/bin/activate
-      # Run packer init and build using the extracted build_config_path directly
-      packer init "${build_config_path}" && packer build -var-file='defaults.pkr.hcl' "${build_config_path}"
+      # Run packer init
+      packer init "${build_config_path}"
+      # Run Packer and capture output
+      packer build -var-file='defaults.pkr.hcl' "${build_config_path}" | tee packer_output.log
+
+      # Extract only from the "Created image" log line
+      image_id=$(grep 'Created image' packer_output.log | grep -o 'ocid1\.image[^)]*' | tail -1)
+      echo "Extracted image OCID: $image_id"
+
+      echo "$image_id" > image_id.txt
 
   - type: Command
     name: "Cleanup Decrypted File"
@@ -147,3 +155,33 @@ steps:
     command: |
       # Remove the decrypted configuration file to secure sensitive data
       rm -f defaults.pkr.hcl
+
+  - type: Command
+    name: "Export Custom Image to Object Storage"
+    shell: bash
+    timeoutInSeconds: 600
+    failImmediatelyOnError: false
+    command: |
+      echo "Exporting custom image to object storage..."
+
+      # Set variables
+      export bucket_name="custom-images"
+      export namespace="bmcmarcinzablocki"
+
+      # Generate dynamic name with date and time
+      timestamp=$(date +'%Y%m%d-%H%M%S')
+      export name="my-custom-image-${timestamp}.oci"
+      echo "Generated export name: $name"
+
+      # Read image ID from file
+      export image_id=$(cat image_id.txt)
+      echo "Using Image ID: $image_id"
+
+      # Run export command
+      oci compute image export to-object \
+        --bucket-name "$bucket_name" \
+        --image-id "$image_id" \
+        --name "$name" \
+        --namespace "$namespace"
+
+      echo "Export initiated. You can monitor the export progress in the OCI Console."
